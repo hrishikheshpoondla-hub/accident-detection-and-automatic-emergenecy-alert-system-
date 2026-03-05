@@ -1,0 +1,8 @@
+<resources>
+    <color name="vibrant_primary">#6366F1</color> <!-- Indigo -->
+    <color name="vibrant_secondary">#A855F7</color> <!-- Purple -->
+    <color name="vibrant_accent">#F43F5E</color> <!-- Rose Red -->
+    <color name="bg_dark">#0F172A</color> <!-- Deep Navy -->
+    <color name="glass_white">#1AFFFFFF</color> <!-- Semi-transparent -->
+    <color name="status_green">#22C55E</color> <!-- Emerald -->
+</resources>
