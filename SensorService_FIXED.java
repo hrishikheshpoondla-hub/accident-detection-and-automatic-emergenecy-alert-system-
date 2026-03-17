@@ -116,7 +116,7 @@ public class SensorService extends Service implements SensorEventListener {
                 Location l = locationResult.getLastLocation();
                 if (l != null) {
                     float speed = l.hasSpeed() ? l.getSpeed() * 3.6f : 0f;
-                    currentSpeedKmh = speed > 2.5f ? speed : 0f;
+                    currentSpeedKmh = speed > 1.5f ? speed : 0f;
                 }
             }
         };
@@ -194,26 +194,7 @@ public class SensorService extends Service implements SensorEventListener {
 
     private void triggerEmergencyPopup() {
         Intent intent = new Intent(this, EmergencyActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        
-        android.app.PendingIntent pendingIntent = android.app.PendingIntent.getActivity(
-                this, 0, intent, 
-                android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_IMMUTABLE);
-                
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "accident_channel")
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle("EMERGENCY DETECTED")
-                .setContentText("Guardian is triggering SOS!")
-                .setPriority(NotificationCompat.PRIORITY_MAX)
-                .setCategory(NotificationCompat.CATEGORY_ALARM)
-                .setFullScreenIntent(pendingIntent, true);
-                
-        NotificationManager manager = getSystemService(NotificationManager.class);
-        if (manager != null) {
-            manager.notify(102, builder.build());
-        }
-
-        // Trigger emergency activity directly as a fallback
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(intent);
     }
 

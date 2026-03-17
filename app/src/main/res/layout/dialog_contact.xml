@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enter up to 3 phone numbers for SOS alerts and calls."
+        android:textColor="#64748B"
+        android:textSize="14sp"
+        android:layout_marginBottom="16dp"/>
+
+    <EditText
+        android:id="@+id/contactInput1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Contact 1 (e.g. +1234567890)"
+        android:inputType="phone"
+        android:padding="12dp"
+        android:layout_marginBottom="8dp"
+        android:background="@android:drawable/editbox_background_normal"/>
+
+    <EditText
+        android:id="@+id/contactInput2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Contact 2 (Optional)"
+        android:inputType="phone"
+        android:padding="12dp"
+        android:layout_marginBottom="8dp"
+        android:background="@android:drawable/editbox_background_normal"/>
+
+    <EditText
+        android:id="@+id/contactInput3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Contact 3 (Optional)"
+        android:inputType="phone"
+        android:padding="12dp"
+        android:background="@android:drawable/editbox_background_normal"/>
+
+</LinearLayout>

@@ -1,3 +1,11 @@
 <resources>
-    <string name="app_name">app</string>
+    <string name="app_name">Guardian</string>
+    <string name="accident_detected">🚨 ACCIDENT DETECTED</string>
+    <string name="confirming_status">CONFIRMING STATUS</string>
+    <string name="seconds_until_sos">Seconds until SOS</string>
+    <string name="alerting_contacts">Alerting %1$d emergency contacts</string>
+    <string name="i_am_safe_cancel">I AM SAFE - CANCEL</string>
+    <string name="status_indicator_desc">Status indicator</string>
+    <string name="sos_icon_desc">SOS icon</string>
+    <string name="emergency_alert_cancelled">Emergency Alert Cancelled</string>
 </resources>

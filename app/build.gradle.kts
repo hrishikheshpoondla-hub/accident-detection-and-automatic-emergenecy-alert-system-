@@ -31,8 +31,16 @@ android {
     }
     packaging {
         jniLibs {
-            useLegacyPackaging = true
+            // Set to false to support 16KB page alignment for newer Android devices
+            useLegacyPackaging = false
         }
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+    // Prevents AAPT from compressing/breaking the 3D model file
+    androidResources {
+        noCompress += "glb"
     }
 }
 
@@ -42,8 +50,8 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.play.services.location)
-    implementation(libs.play.services.maps)
-    implementation(libs.maplibre.sdk)
+    implementation(libs.sceneform)
+    implementation(libs.localbroadcastmanager)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

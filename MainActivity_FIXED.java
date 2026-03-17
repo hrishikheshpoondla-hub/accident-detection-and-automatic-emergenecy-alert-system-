@@ -28,7 +28,6 @@ import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -49,7 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener, SensorContextManager.ContextChangeListener, AltitudeManager.AltitudeListener, VerticalMotionTracker.VerticalMotionListener {
+public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     private static final String TAG = "MainActivity";
     private TextView locationText, gForceValue, speedValue, orientationText;
@@ -57,14 +56,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private OrientationView orientationView;
     private SceneView sceneView;
     private Node bikeNode;
-    
-    private SensorContextManager contextManager;
-    private AltitudeManager altitudeManager;
-    private VerticalMotionTracker verticalMotionTracker;
-    private TextView contextDisplayView;
-    private SwitchCompat modeSwitch;
-    private View visualizationCard;
-    private String latestAltitudeStr = "Altitude: -- m";
     
     private SharedPreferences sharedPreferences;
     
@@ -81,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     
     private float currentSpeedKmh = 0f;
     private float filteredLinearAcc = 0f;
-    private static final float ALPHA = 0.25f; 
+    private static final float ALPHA = 0.25f; // Balanced smoothing for dashboard
 
     private static final int PERMISSION_REQUEST_CODE = 100;
     private static final int BACKGROUND_LOCATION_PERMISSION_CODE = 101;
@@ -105,35 +96,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         emergencyButton = findViewById(R.id.emergencyButton);
         orientationView = findViewById(R.id.orientationView);
         sceneView = findViewById(R.id.sceneView);
-        contextDisplayView = findViewById(R.id.contextDisplay);
-        modeSwitch = findViewById(R.id.modeSwitch);
-        visualizationCard = findViewById(R.id.visualizationCard);
-        
-        if (visualizationCard != null) {
-            visualizationCard.setVisibility(View.GONE);
-        }
-        
-        if (modeSwitch != null) {
-            modeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (visualizationCard != null) {
-                    visualizationCard.setVisibility(isChecked ? View.VISIBLE : View.GONE);
-                }
-            });
-        }
         
         sharedPreferences = getSharedPreferences("GuardianPrefs", MODE_PRIVATE);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-        contextManager = SensorContextManager.getInstance();
-        contextManager.addContextListener(this);
-        
-        altitudeManager = new AltitudeManager(this);
-        altitudeManager.addAltitudeListener(this);
-        altitudeManager.startAltitudeTracking();
-        
-        verticalMotionTracker = new VerticalMotionTracker(this);
-        verticalMotionTracker.addVerticalMotionListener(this);
-        verticalMotionTracker.startTracking();
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (sensorManager != null) {
@@ -209,6 +174,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                    editor.putString("emergency_contact_1", input1.getText().toString().trim());
                    editor.putString("emergency_contact_2", input2.getText().toString().trim());
                    editor.putString("emergency_contact_3", input3.getText().toString().trim());
+                   // Use commit() for critical contact updates to ensure immediate persistence
                    if (editor.commit()) {
                        Toast.makeText(this, "Contacts Saved", Toast.LENGTH_SHORT).show();
                    } else {
@@ -286,14 +252,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void startSensorService() {
-        Intent intentEnhanced = new Intent(this, SensorService_ENHANCED.class);
-        Intent intentLowPower = new Intent(this, LowPowerSensorService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(intentEnhanced);
-        } else {
-            startService(intentEnhanced);
-        }
-        startService(intentLowPower);
+        Intent intent = new Intent(this, SensorService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) startForegroundService(intent);
+        else startService(intent);
     }
 
     @Override
@@ -329,24 +290,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void setupLocationUpdates() {
-        locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 500)
-                .setMinUpdateIntervalMillis(200)
-                .build();
-                
+        locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000).build();
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(@NonNull LocationResult result) {
                 Location l = result.getLastLocation();
                 if (l != null) {
-                    float rawSpeedKmh = l.hasSpeed() ? l.getSpeed() * 3.6f : 0f;
-                    boolean isStationary = contextManager != null && contextManager.getContext().isStationary;
-                    
-                    // Filter out GPS jitter when stationary or very slow 
-                    if (isStationary || rawSpeedKmh < 2.5f) {
-                        currentSpeedKmh = 0f;
-                    } else {
-                        currentSpeedKmh = rawSpeedKmh;
-                    }
+                    float speedKmh = l.hasSpeed() ? l.getSpeed() * 3.6f : 0f;
+                    currentSpeedKmh = speedKmh > 1.5f ? speedKmh : 0f;
                     
                     if (speedValue != null) speedValue.setText(String.format(Locale.getDefault(), "%.1f km/h", currentSpeedKmh));
                     if (locationText != null) locationText.setText(String.format(Locale.getDefault(), "Lat: %.5f, Lon: %.5f", l.getLatitude(), l.getLongitude()));
@@ -395,12 +346,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 Log.e(TAG, "SceneView destroy error", e);
             }
         }
-        if (altitudeManager != null) {
-            altitudeManager.stopAltitudeTracking();
-        }
-        if (verticalMotionTracker != null) {
-            verticalMotionTracker.stopTracking();
-        }
         if (fusedLocationClient != null && locationCallback != null) {
             fusedLocationClient.removeLocationUpdates(locationCallback);
         }
@@ -409,84 +354,4 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {}
-
-    @Override
-    public void onContextChanged(SensorContextManager.DeviceContext context) {
-        runOnUiThread(() -> updateContextDisplay(context));
-    }
-
-    @Override
-    public void onAltitudeChanged(AltitudeManager.AltitudeData altitudeData) {
-        // If barometer returns a real reading, use it
-        if (altitudeData.currentAltitude > 0 || altitudeData.currentPressure > 0) {
-            latestAltitudeStr = String.format(Locale.getDefault(), 
-                "Barometer Alt: %.1f m (h: %.1f m)", 
-                altitudeData.currentAltitude, altitudeData.heightAboveGround);
-            
-            if (contextManager != null) {
-                runOnUiThread(() -> updateContextDisplay(contextManager.getContext()));
-            }
-        }
-    }
-
-    @Override
-    public void onFallDetected(AltitudeManager.FallEvent fallEvent) {
-        runOnUiThread(() -> {
-            Toast.makeText(this, "BAROMETER FALL DETECTED: " + fallEvent.fallDistance + "m", Toast.LENGTH_LONG).show();
-            if (fallEvent.isSevere) {
-                startEmergencyPopup();
-            }
-        });
-    }
-
-    @Override
-    public void onVerticalVelocityChanged(float velocity) {
-        // Optional: show velocity in UI
-    }
-
-    @Override
-    public void onHeightEstimated(float height) {
-        // Only override the string if Barometer failed/is not present
-        if (!latestAltitudeStr.startsWith("Barometer")) {
-            latestAltitudeStr = String.format(Locale.getDefault(), 
-                "Accel Fall Ht: %.2f m", Math.abs(height));
-            
-            if (contextManager != null) {
-                runOnUiThread(() -> updateContextDisplay(contextManager.getContext()));
-            }
-        }
-    }
-
-    @Override
-    public void onFallDetected(float estimatedFallHeight) {
-        runOnUiThread(() -> {
-            Toast.makeText(this, "ACCEL FALL DETECTED: " + String.format("%.1f", estimatedFallHeight) + "m", Toast.LENGTH_LONG).show();
-            if (estimatedFallHeight > 1.0f) {
-                startEmergencyPopup();
-            }
-        });
-    }
-
-    private void updateContextDisplay(SensorContextManager.DeviceContext context) {
-        if (contextDisplayView == null) return;
-        String contextStr = String.format(Locale.getDefault(),
-            "📱 Context:\n" +
-            "Pocket: %s\n" +
-            "Moving: %s\n" +
-            "Stationary: %s\n" +
-            "Flat: %s\n" +
-            "Light: %.0f lux\n" +
-            "Proximity: %s\n" +
-            "%s",
-            context.isInPocket ? "✓" : "✗",
-            context.isMoving ? "✓" : "✗",
-            context.isStationary ? "✓" : "✗",
-            context.isFlatOnGround ? "✓" : "✗",
-            context.lux,
-            context.proximityBlocked ? "Near" : "Away",
-            latestAltitudeStr
-        );
-
-        contextDisplayView.setText(contextStr);
-    }
 }

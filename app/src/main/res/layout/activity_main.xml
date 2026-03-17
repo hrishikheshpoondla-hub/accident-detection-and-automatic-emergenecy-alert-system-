@@ -1,156 +1,305 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/main_gradient"
+    android:background="@color/bg_dark"
     tools:context=".MainActivity">
 
-    <!-- Glowing Top Header Decoration -->
-    <View
-        android:id="@+id/topGlow"
-        android:layout_width="300dp"
-        android:layout_height="300dp"
-        android:background="@drawable/main_gradient"
-        android:alpha="0.3"
-        android:translationY="-150dp"
-        android:translationX="-50dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
-        android:id="@+id/titleText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="GUARDIAN AI"
-        android:letterSpacing="0.1"
-        android:textSize="32sp"
-        android:fontFamily="sans-serif-black"
-        android:textColor="#FFFFFF"
-        android:layout_marginTop="60dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <TextView
-        android:id="@+id/subTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="REAL-TIME MONITORING"
-        android:textColor="@color/vibrant_primary"
-        android:textStyle="bold"
-        android:textSize="12sp"
-        app:layout_constraintTop_toBottomOf="@id/titleText"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <!-- Main Status Card -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/statusCard"
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="24dp"
-        app:cardBackgroundColor="@color/glass_white"
-        app:cardCornerRadius="24dp"
-        app:strokeWidth="1dp"
-        app:strokeColor="#33FFFFFF"
-        app:layout_constraintTop_toBottomOf="@id/subTitle"
-        android:layout_marginTop="40dp">
+        android:background="@android:color/transparent"
+        app:elevation="0dp">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:titleTextColor="@color/text_primary" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:padding="16dp">
 
-            <RelativeLayout
+            <!-- System Status Header -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-                <TextView
-                    android:id="@+id/statusText"
-                    android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardBackgroundColor="@color/bg_dark_card">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="System Active"
-                    android:textColor="@color/status_green"
-                    android:textStyle="bold"
-                    android:textSize="20sp" />
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_alignParentEnd="true"
-                    android:src="@android:drawable/presence_online"
-                    app:tint="@color/status_green" />
-            </RelativeLayout>
+                    android:padding="16dp">
 
-            <TextView
-                android:id="@+id/locationText"
-                android:layout_width="wrap_content"
+                    <TextView
+                        android:id="@+id/statusLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="GUARDIAN ACTIVE"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.1"/>
+
+                    <TextView
+                        android:id="@+id/statusText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/statusLabel"
+                        android:layout_marginTop="4dp"
+                        android:text="System Monitoring"
+                        android:textColor="@color/status_green"
+                        android:textSize="18sp"
+                        android:textStyle="bold"/>
+
+                    <ImageView
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:src="@drawable/status_circle_active"/>
+                </RelativeLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Mode Selection Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="📍 Fetching location..."
-                android:textColor="#E0E0E0"
-                android:textSize="14sp"/>
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardBackgroundColor="@color/bg_dark_card">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Riding Mode"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold"/>
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/modeSwitch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Metrics Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardBackgroundColor="@color/bg_dark_card">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="G-FORCE"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="10sp"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:id="@+id/gForceValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="1.00 G"
+                            android:textColor="@color/primary_red_light"
+                            android:textSize="24sp"
+                            android:fontFamily="sans-serif-black"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardBackgroundColor="@color/bg_dark_card">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="SPEED"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="10sp"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:id="@+id/speedValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0.0 km/h"
+                            android:textColor="@color/info_blue"
+                            android:textSize="24sp"
+                            android:fontFamily="sans-serif-black"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <!-- 3D Visualization Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/visualizationCard"
+                android:layout_width="match_parent"
+                android:layout_height="320dp"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardBackgroundColor="@color/bg_dark_card"
+                app:strokeWidth="1dp"
+                app:strokeColor="#1AFFFFFF">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <com.google.ar.sceneform.SceneView
+                        android:id="@+id/sceneView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+
+                    <com.example.app.OrientationView
+                        android:id="@+id/orientationView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/orientationText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom|start"
+                        android:layout_margin="16dp"
+                        android:text="Tilt: 0.0°"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp"
+                        android:textStyle="bold"/>
+                </FrameLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Location Details Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardBackgroundColor="@color/bg_dark_card">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="LAST KNOWN LOCATION"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="10sp"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:id="@+id/locationText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="📍 Fetching GPS..."
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Context Details Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="80dp"
+                app:cardCornerRadius="16dp"
+                app:cardBackgroundColor="@color/bg_dark_card">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="DEVICE CONTEXT"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="10sp"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:id="@+id/contextDisplay"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Detecting context..."
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
         </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
+    </androidx.core.widget.NestedScrollView>
 
-    <!-- Metrics Grid -->
-    <LinearLayout
-        android:id="@+id/metricLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingHorizontal="24dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/statusCard">
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            app:cardBackgroundColor="#1E293B"
-            app:cardCornerRadius="20dp">
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="G-FORCE" android:textColor="#94A3B8" android:textSize="10sp" android:textStyle="bold"/>
-                <TextView android:id="@+id/gForceValue" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="1.00 G" android:textColor="@color/vibrant_secondary" android:textSize="22sp" android:textStyle="bold"/>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            app:cardBackgroundColor="#1E293B"
-            app:cardCornerRadius="20dp">
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="SPEED" android:textColor="#94A3B8" android:textSize="10sp" android:textStyle="bold"/>
-                <TextView android:id="@+id/speedValue" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0 km/h" android:textColor="@color/vibrant_primary" android:textSize="22sp" android:textStyle="bold"/>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-    </LinearLayout>
-
-    <com.google.android.material.button.MaterialButton
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/emergencyButton"
-        android:layout_width="match_parent"
-        android:layout_height="70dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
         android:layout_margin="24dp"
-        android:text="SEND SOS ALERT"
-        android:textSize="16sp"
-        android:textStyle="bold"
+        android:text="SEND SOS"
         android:textColor="#FFFFFF"
-        app:cornerRadius="20dp"
-        app:backgroundTint="@color/vibrant_accent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        android:textStyle="bold"
+        app:backgroundTint="@color/primary_red"
+        app:icon="@android:drawable/ic_menu_send"
+        app:iconTint="#FFFFFF" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
