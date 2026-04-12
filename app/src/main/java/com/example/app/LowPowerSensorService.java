@@ -16,7 +16,6 @@ public class LowPowerSensorService extends Service implements SensorEventListene
     private static final String TAG = "LowPowerService";
     
     private SensorManager sensorManager;
-    private Sensor significantMotionSensor;
     private boolean isFullServiceActive = false;
 
     @Override
@@ -24,7 +23,7 @@ public class LowPowerSensorService extends Service implements SensorEventListene
         super.onCreate();
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (sensorManager != null) {
-            significantMotionSensor = sensorManager.getDefaultSensor(
+            Sensor significantMotionSensor = sensorManager.getDefaultSensor(
                 Sensor.TYPE_SIGNIFICANT_MOTION);
             
             // Register only significant motion sensor (ultra low power)
@@ -43,7 +42,7 @@ public class LowPowerSensorService extends Service implements SensorEventListene
             
             // Start full SensorService
             if (!isFullServiceActive) {
-                Intent fullServiceIntent = new Intent(this, SensorService_ENHANCED.class);
+                Intent fullServiceIntent = new Intent(this, EnhancedSensorService.class);
                 startService(fullServiceIntent);
                 isFullServiceActive = true;
                 
@@ -58,7 +57,7 @@ public class LowPowerSensorService extends Service implements SensorEventListene
         handler.postDelayed(() -> {
             if (isFullServiceActive) {
                 Log.d(TAG, "Stopping full sensor service - timeout");
-                Intent fullServiceIntent = new Intent(this, SensorService_ENHANCED.class);
+                Intent fullServiceIntent = new Intent(this, EnhancedSensorService.class);
                 stopService(fullServiceIntent);
                 isFullServiceActive = false;
             }

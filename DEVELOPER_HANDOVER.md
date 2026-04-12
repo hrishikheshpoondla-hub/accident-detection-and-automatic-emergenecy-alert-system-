@@ -5,7 +5,7 @@
 Guardian is a high-reliability accident detection app. Unlike simple "tilt" sensors, it uses a multi-factor verification system to distinguish between a dropped phone and a high-speed collision.
 
 ## 2. Technical Architecture
-### A. The Monitoring Layer (`SensorService_ENHANCED.java`)
+### A. The Monitoring Layer (`EnhancedSensorService.java`)
 - **Type:** Foreground Location Service.
 - **Priority:** Must be high-priority to prevent Android's OOM (Out of Memory) killer from stopping it.
 - **Logic:**
@@ -21,7 +21,7 @@ Guardian is a high-reliability accident detection app. Unlike simple "tilt" sens
   - `Intent.ACTION_CALL`: Initiates recursive phone calls.
 
 ## 3. Critical Constants (The "Magic Numbers")
-If the app is too sensitive or not sensitive enough, tune these in `SensorService_ENHANCED.java`:
+If the app is too sensitive or not sensitive enough, tune these in `EnhancedSensorService.java`:
 - `IMPACT_THRESHOLD_NORMAL`: Default `25.0f`.
 - `IMPACT_THRESHOLD_IN_POCKET`: Default `20.0f`.
 - `VERIFICATION_WINDOW`: `3500ms` (3.5 seconds to decide if it was an accident).

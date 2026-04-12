@@ -21,8 +21,8 @@ import android.content.pm.ServiceInfo;
 import android.os.Build;
 import androidx.core.app.NotificationCompat;
 
-public class SensorService_ENHANCED extends Service implements SensorEventListener {
-    private static final String TAG = "SensorService_Enhanced";
+public class EnhancedSensorService extends Service implements SensorEventListener {
+    private static final String TAG = "EnhancedSensorService";
 
     // Enhanced thresholds with context awareness
     private static final float IMPACT_THRESHOLD_NORMAL = 25.0f;

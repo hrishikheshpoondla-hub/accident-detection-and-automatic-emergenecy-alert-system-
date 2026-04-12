@@ -16,10 +16,15 @@ public class SensorContextManager {
         return instance;
     }
 
-    private SensorContextManager() {}
+    private SensorContextManager() {
+        super();
+    }
 
     // Device context flags
     public static class DeviceContext {
+        public DeviceContext() {
+            super();
+        }
         public boolean isInPocket;           // Based on proximity + light
         public boolean isStationary;         // Based on stationary sensor
         public boolean isMoving;             // Based on significant motion

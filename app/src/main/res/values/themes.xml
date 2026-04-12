@@ -1,7 +1,12 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.MyApplication" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/vanguard_cyan_primary</item>
+        <item name="colorSecondary">@color/vanguard_cyan_dim</item>
+        <item name="android:statusBarColor">@color/bg_vanguard</item>
+        <item name="android:navigationBarColor">@color/bg_vanguard</item>
+        <item name="android:windowBackground">@color/bg_vanguard</item>
     </style>
 
     <style name="Theme.MyApplication" parent="Base.Theme.MyApplication" />

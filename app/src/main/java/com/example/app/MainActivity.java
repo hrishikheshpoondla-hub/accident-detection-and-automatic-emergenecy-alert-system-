@@ -14,7 +14,10 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.telephony.SmsManager;
+import android.text.InputType;
 import android.util.Log;
+import android.widget.LinearLayout;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -61,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private SensorContextManager contextManager;
     private AltitudeManager altitudeManager;
     private VerticalMotionTracker verticalMotionTracker;
+    private AccidentDetectionManager accidentDetectionManager;
     private TextView contextDisplayView;
     private SwitchCompat modeSwitch;
     private View visualizationCard;
@@ -135,6 +139,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         verticalMotionTracker.addVerticalMotionListener(this);
         verticalMotionTracker.startTracking();
 
+        accidentDetectionManager = new AccidentDetectionManager(this, verticalMotionTracker, altitudeManager);
+        accidentDetectionManager.setAccidentAlertListener(details -> {
+            runOnUiThread(() -> {
+                sendEmergencySMS(details);
+                startEmergencyPopup();
+            });
+        });
+        accidentDetectionManager.start();
+
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (sensorManager != null) {
             linearAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
@@ -191,17 +204,39 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private void showContactDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        LayoutInflater inflater = getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.dialog_contact, null);
-        builder.setView(dialogView);
+        
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        int padding = (int)(24 * getResources().getDisplayMetrics().density);
+        layout.setPadding(padding, padding, padding, padding);
+        
+        TextView desc = new TextView(this);
+        desc.setText("Enter up to 3 phone numbers for SOS alerts and calls.");
+        desc.setTextColor(android.graphics.Color.parseColor("#64748B"));
+        desc.setTextSize(14f);
+        desc.setPadding(0, 0, 0, padding/2);
+        layout.addView(desc);
+        
+        EditText input1 = new EditText(this);
+        input1.setHint("Contact 1 (e.g. +1234567890)");
+        input1.setInputType(InputType.TYPE_CLASS_PHONE);
+        layout.addView(input1);
+        
+        EditText input2 = new EditText(this);
+        input2.setHint("Contact 2 (Optional)");
+        input2.setInputType(InputType.TYPE_CLASS_PHONE);
+        layout.addView(input2);
+        
+        EditText input3 = new EditText(this);
+        input3.setHint("Contact 3 (Optional)");
+        input3.setInputType(InputType.TYPE_CLASS_PHONE);
+        layout.addView(input3);
+        
+        builder.setView(layout);
 
-        EditText input1 = dialogView.findViewById(R.id.contactInput1);
-        EditText input2 = dialogView.findViewById(R.id.contactInput2);
-        EditText input3 = dialogView.findViewById(R.id.contactInput3);
-
-        if (input1 != null) input1.setText(sharedPreferences.getString("emergency_contact_1", ""));
-        if (input2 != null) input2.setText(sharedPreferences.getString("emergency_contact_2", ""));
-        if (input3 != null) input3.setText(sharedPreferences.getString("emergency_contact_3", ""));
+        input1.setText(sharedPreferences.getString("emergency_contact_1", ""));
+        input2.setText(sharedPreferences.getString("emergency_contact_2", ""));
+        input3.setText(sharedPreferences.getString("emergency_contact_3", ""));
 
         builder.setTitle("Emergency Contacts")
                .setPositiveButton("Save", (dialog, which) -> {
@@ -223,6 +258,56 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Intent intent = new Intent(this, EmergencyActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(intent);
+    }
+    
+    private void sendEmergencySMS(String crashDetails) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+            Log.e(TAG, "Cannot send SMS. Permission denied.");
+            return;
+        }
+
+        String contact1 = sharedPreferences.getString("emergency_contact_1", "");
+        String contact2 = sharedPreferences.getString("emergency_contact_2", "");
+        String contact3 = sharedPreferences.getString("emergency_contact_3", "");
+
+        List<String> contacts = new ArrayList<>();
+        if (!contact1.isEmpty()) contacts.add(contact1);
+        if (!contact2.isEmpty()) contacts.add(contact2);
+        if (!contact3.isEmpty()) contacts.add(contact3);
+
+        if (contacts.isEmpty()) {
+            Toast.makeText(this, "Accident detected, but no emergency contacts are saved!", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
+            String locationLink = "Unknown Location";
+            if (location != null) {
+                locationLink = "http://maps.google.com/?q=" + location.getLatitude() + "," + location.getLongitude();
+            }
+
+            // SmsManager format
+            SmsManager smsManager;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                smsManager = getSystemService(SmsManager.class);
+            } else {
+                smsManager = SmsManager.getDefault();
+            }
+
+            String message = "EMERGENCY: A severe accident has been detected!\n" +
+                             crashDetails + "\n" +
+                             "Location: " + locationLink;
+
+            for (String number : contacts) {
+                try {
+                    smsManager.sendTextMessage(number, null, message, null, null);
+                    Log.i(TAG, "Emergency SMS sent to: " + number);
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to send SMS to " + number, e);
+                }
+            }
+            Toast.makeText(this, "Emergency SMS dispatched to contacts", Toast.LENGTH_LONG).show();
+        });
     }
 
     private void checkAndRequestPermissions() {
@@ -286,7 +371,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void startSensorService() {
-        Intent intentEnhanced = new Intent(this, SensorService_ENHANCED.class);
+        Intent intentEnhanced = new Intent(this, EnhancedSensorService.class);
         Intent intentLowPower = new Intent(this, LowPowerSensorService.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intentEnhanced);
@@ -401,6 +486,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (verticalMotionTracker != null) {
             verticalMotionTracker.stopTracking();
         }
+        if (accidentDetectionManager != null) {
+            accidentDetectionManager.stop();
+        }
         if (fusedLocationClient != null && locationCallback != null) {
             fusedLocationClient.removeLocationUpdates(locationCallback);
         }
@@ -440,11 +528,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     @Override
-    public void onVerticalVelocityChanged(float velocity) {
-        // Optional: show velocity in UI
-    }
-
-    @Override
     public void onHeightEstimated(float height) {
         // Only override the string if Barometer failed/is not present
         if (!latestAltitudeStr.startsWith("Barometer")) {
@@ -458,13 +541,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     @Override
-    public void onFallDetected(float estimatedFallHeight) {
-        runOnUiThread(() -> {
-            Toast.makeText(this, "ACCEL FALL DETECTED: " + String.format("%.1f", estimatedFallHeight) + "m", Toast.LENGTH_LONG).show();
-            if (estimatedFallHeight > 1.0f) {
-                startEmergencyPopup();
-            }
-        });
+    public void onAccidentDetected(float impactMagnitude) {
+        // MainActivity defers this handling to AccidentDetectionManager
     }
 
     private void updateContextDisplay(SensorContextManager.DeviceContext context) {

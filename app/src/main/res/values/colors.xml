@@ -1,26 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Modern Color System - Guardian App -->
-    <color name="primary_red">#E53935</color>
-    <color name="primary_red_light">#FF6F60</color>
-    <color name="primary_red_dark">#AB000D</color>
-    <color name="alert_red">#FF3D00</color>
-    <color name="accent_orange">#FF6F00</color>
+    <!-- Obsidian Vanguard Palette (Redesign) -->
+    <color name="bg_vanguard">#131313</color>
+    <color name="vanguard_cyan_primary">#00E5FF</color>
+    <color name="vanguard_cyan_dim">#00626E</color>
+    <color name="vanguard_card">#201F1F</color>
+    <color name="vanguard_card_high">#2A2A2A</color>
+    <color name="vanguard_text_primary">#E5E2E1</color>
+    <color name="vanguard_text_secondary">#BAC9CC</color>
+    <color name="vanguard_sos_red">#FFB4AB</color>
+    <color name="vanguard_sos_container">#93000A</color>
+    <color name="vanguard_outline">#3B494C</color>
 
-    <color name="success_main">#00C853</color>
-    <color name="warning_main">#FFD600</color>
-    <color name="error_main">#FF3D00</color>
-    <color name="info_blue">#2196F3</color>
-
-    <color name="bg_dark">#0F172A</color>
-    <color name="bg_dark_card">#1E293B</color>
-    <color name="text_primary">#FFFFFF</color>
-    <color name="text_secondary">#94A3B8</color>
-    <color name="glass_white">#1AFFFFFF</color>
-    <color name="status_green">#22C55E</color>
-
-    <!-- Legacy support if needed -->
-    <color name="vibrant_primary">#6366F1</color>
-    <color name="vibrant_secondary">#A855F7</color>
-    <color name="vibrant_accent">#F43F5E</color>
+    <color name="bg_dark">#131313</color>
+    <color name="bg_dark_card">#201F1F</color>
+    <color name="text_primary">#E5E2E1</color>
+    <color name="text_secondary">#BAC9CC</color>
+    <color name="status_green">#00E5FF</color>
+    <color name="primary_red">#FFB4AB</color>
 </resources>
