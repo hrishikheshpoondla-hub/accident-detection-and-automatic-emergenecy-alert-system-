@@ -90,14 +90,23 @@ public class AccidentDetectionManager implements VerticalMotionTracker.VerticalM
     // Sensor Fusion Validation
     // =================================================================
 
+    // Minimum force (m/s²) required to confirm an accident via this manager path.
+    // Must align with SensorService.java IMPACT_THRESHOLD (~4.5g = 45 m/s²).
+    private static final float MIN_CONFIRM_MAGNITUDE = 40.0f;
+
     private void verifyAccidentWithSensorFusion(float impactMagnitude, long impactTime) {
+        // Guard: Only confirm if this was a genuinely high-magnitude event
+        if (impactMagnitude < MIN_CONFIRM_MAGNITUDE) {
+            Log.d(TAG, "Impact magnitude too low (" + impactMagnitude + " m/s²) to confirm. Ignoring.");
+            return;
+        }
+
         // 1. We know there was a massive impact AND the device is now at rest.
         // 2. Let's check the barometer for a sudden pressure spike (Airbag deployment typically causes a sharp, brief increase in cabin pressure)
-        
         boolean airbagSuspected = false;
         if (altitudeManager != null) {
             float currentPressure = altitudeManager.getCurrentAltitude().currentPressure;
-            
+
             // A rapid jump of ~2-5 hPa in a fraction of a second is indicative of an airbag
             if (Math.abs(currentPressure - baselinePressureBeforeImpact) > 2.0f) {
                 airbagSuspected = true;
@@ -107,9 +116,6 @@ public class AccidentDetectionManager implements VerticalMotionTracker.VerticalM
 
         // Prepare the alert details
         String details = String.format("Time: %d | Impact Force: %.1f m/s² | Airbag Suspected: %b", impactTime, impactMagnitude, airbagSuspected);
-
-        // If the user was registered traveling fast (GPS), we would factor that in here.
-        // For now, if the VerticalMotionTracker confirmed rest-state after high-impact, we trigger the final alert.
 
         if (listener != null) {
             Log.e(TAG, "SEVERE ACCIDENT CONFIRMED. Triggering Alert Lifecycle.");

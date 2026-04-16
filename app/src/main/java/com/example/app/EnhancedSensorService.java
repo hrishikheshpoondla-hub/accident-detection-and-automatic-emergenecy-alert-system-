@@ -24,10 +24,10 @@ import androidx.core.app.NotificationCompat;
 public class EnhancedSensorService extends Service implements SensorEventListener {
     private static final String TAG = "EnhancedSensorService";
 
-    // Enhanced thresholds with context awareness
-    private static final float IMPACT_THRESHOLD_NORMAL = 25.0f;
-    private static final float IMPACT_THRESHOLD_IN_POCKET = 20.0f;
-    private static final long VERIFICATION_WINDOW = 3500;
+    // Presentation-Safe thresholds (aligned with SensorService.java)
+    private static final float IMPACT_THRESHOLD_NORMAL = 45.0f;  // ~4.5g
+    private static final float IMPACT_THRESHOLD_IN_POCKET = 38.0f; // Slightly lower when in pocket
+    private static final long VERIFICATION_WINDOW = 5000; // 5s window
     private static final long STEP_DETECTION_COOLDOWN = 1000;
 
     private SensorManager sensorManager;
@@ -319,7 +319,7 @@ public class EnhancedSensorService extends Service implements SensorEventListene
         Log.d(TAG, "Verification started. Context: " + context);
         
         Handler handler = new Handler(Looper.getMainLooper());
-        handler.post(() -> Toast.makeText(this, "⚠️ IMPACT DETECTED! Verifying...", Toast.LENGTH_SHORT).show());
+        // Removed intermediate toast — silent verification for cleaner demo experience
 
         // 2-phase verification
         handler.postDelayed(() -> {
@@ -334,9 +334,12 @@ public class EnhancedSensorService extends Service implements SensorEventListene
         boolean isAccidentConfirmed = false;
 
         // Factor 1: Phone is stationary (stopped after impact)
-        if (context.isStationary || currentSpeedKmh < 5.0f) {
-            // Factor 2: Phone is flat on ground (likely fell)
-            if (context.isFlatOnGround || Math.abs(context.gravityY) < 5.0f) { // Added leniency for testing
+        if (context.isStationary || currentSpeedKmh < 3.0f) {
+            // Factor 2: Phone is flat on ground OR tilted significantly (not upright in hand)
+            // gravityZ dominant (>7.0) means flat on ground; gravityX/Y dominant means tilted sideways
+            float gravityMag = (float) Math.sqrt(context.gravityX * context.gravityX + context.gravityY * context.gravityY + context.gravityZ * context.gravityZ);
+            boolean isLyingDown = gravityMag > 0 && (Math.abs(context.gravityZ) / gravityMag) > 0.7f;
+            if (isLyingDown || context.isFlatOnGround) {
                 isAccidentConfirmed = true;
             }
         }
